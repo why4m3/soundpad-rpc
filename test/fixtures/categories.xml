@@ -1,0 +1,15 @@
+<Categories>
+<Category index="0" name="All sounds" type="1">
+<Sound index="1"/><Sound index="2"/><Sound index="3"/><Sound index="4"/>
+</Category>
+<Category index="1" name="Мемы">
+<Sound index="1"/>
+<Category index="2" name="Русские мемы">
+<Sound index="4"/>
+</Category>
+</Category>
+<Category index="3" name="Пустая"/>
+<Category index="4" name="Эффекты">
+<Sound index="2"/>
+</Category>
+</Categories>

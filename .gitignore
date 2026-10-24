@@ -1,0 +1,5 @@
+node_modules/
+config.json
+*.log
+*.log.1
+windows/node-path.txt

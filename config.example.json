@@ -1,0 +1,42 @@
+{
+  // Application ID приложения Soundpad из Discord Developer Portal (только цифры).
+  // Должен отличаться от Application ID, который использует claude-rpc.
+  "client_id": "",
+
+  // Как часто опрашивать Soundpad, мс (250..60000).
+  "poll_interval_ms": 1000,
+
+  // 2 = Listening ("Слушает"), 0 = Playing, 3 = Watching, 5 = Competing.
+  "activity_type": 2,
+
+  // Что писать в строке под ником: 0 = имя приложения, 1 = state, 2 = details.
+  // null = не передавать поле (если старый клиент Discord ругается).
+  "status_display_type": 2,
+
+  // Шаблоны строк. Подстановки: {title} {file} {artist} {category}
+  "details": "{title}",
+  "state": "{category}",
+  "default_category": "Soundpad",
+  "unknown_title": "Soundpad",
+
+  // Пауза: показывать без полосы прогресса со строкой paused_state, или убирать.
+  "show_when_paused": true,
+  "paused_state": "На паузе",
+
+  // Ключи картинок из Rich Presence -> Art Assets (или https-ссылка).
+  "large_image": "soundpad",
+  "large_text": "Soundpad",
+  "small_image_paused": "",
+
+  // Категории, которые не показывать (служебная "все звуки").
+  "ignored_categories": ["All sounds", "Все звуки", "Alle Sounds"],
+
+  // Пусто = %LOCALAPPDATA%\\soundpad-rpc\\state.json (его читает claude-rpc).
+  "state_file": "",
+  "log_file": "soundpad-rpc.log",
+
+  "soundpad_pipe": "\\\\.\\pipe\\sp_remote_control",
+  // Пусто = искать \\?\pipe\discord-ipc-0..9 автоматически.
+  "discord_pipe": "",
+  "discord_retry_ms": 15000
+}
