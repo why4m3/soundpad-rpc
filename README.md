@@ -10,7 +10,7 @@
 
 [![Download](https://img.shields.io/github/v/release/why4m3/soundpad-rpc?label=download&logo=windows&color=0078D6)](https://github.com/why4m3/soundpad-rpc/releases/latest)
 
-<p align="center"><img src="docs/presence.png" alt="Listening to Soundpad in Discord" width="496"></p>
+<p align="center"><img src="docs/presence.png" alt="Listening to Soundpad in Discord" width="475"></p>
 
 Spotify-style Discord Rich Presence for [Soundpad](https://leppsoft.com/soundpad/). While a sound is playing, your Discord profile shows:
 

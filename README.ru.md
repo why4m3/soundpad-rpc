@@ -4,7 +4,7 @@
 
 [![Скачать](https://img.shields.io/github/v/release/why4m3/soundpad-rpc?label=скачать&logo=windows&color=0078D6)](https://github.com/why4m3/soundpad-rpc/releases/latest)
 
-<p align="center"><img src="docs/presence.png" alt="Слушает Soundpad в Discord" width="496"></p>
+<p align="center"><img src="docs/presence.png" alt="Слушает Soundpad в Discord" width="475"></p>
 
 Discord Rich Presence для Soundpad в стиле Spotify. Пока в Soundpad играет звук, в профиле Discord видно:
 
