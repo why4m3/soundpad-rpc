@@ -3,8 +3,24 @@
   "version": "1.0.0",
   "private": true,
   "description": "Discord Rich Presence (Listening) for Soundpad, no dependencies",
+  "keywords": [
+    "soundpad",
+    "discord",
+    "rich-presence",
+    "discord-rpc",
+    "windows"
+  ],
+  "homepage": "https://github.com/why4m3/soundpad-rpc#readme",
+  "bugs": {
+    "url": "https://github.com/why4m3/soundpad-rpc/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/why4m3/soundpad-rpc.git"
+  },
+  "license": "MIT",
+  "author": "why4m3",
   "main": "index.js",
-  "license": "UNLICENSED",
   "engines": {
     "node": ">=20"
   },

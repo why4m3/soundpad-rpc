@@ -1,215 +1,164 @@
 # soundpad-rpc
 
-Discord Rich Presence для Soundpad в стиле Spotify. Пока в Soundpad играет звук, в профиле Discord видно:
+[![tests](https://github.com/why4m3/soundpad-rpc/actions/workflows/test.yml/badge.svg)](https://github.com/why4m3/soundpad-rpc/actions/workflows/test.yml)
+![node](https://img.shields.io/badge/node-%3E%3D20-339933?logo=node.js&logoColor=white)
+![dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)
+![platform](https://img.shields.io/badge/platform-Windows-0078D6?logo=windows&logoColor=white)
+[![license](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+
+**English** | [Русский](README.ru.md)
+
+Spotify-style Discord Rich Presence for [Soundpad](https://leppsoft.com/soundpad/). While a sound is playing, your Discord profile shows:
 
 ```
-Слушает Soundpad
-Оу май                          <- название звука (details)
-Русские мемы                    <- категория Soundpad или "Soundpad" (state)
-0:02 ━━━━━━━●────────── 0:07    <- полоса прогресса по timestamps
+Listening to Soundpad
+Oh my                           <- sound title (details)
+Memes                           <- Soundpad category (state)
+0:02 ━━━━━━━●────────── 0:07    <- progress bar
 ```
 
-- Тип активности Listening (`type: 2`, «Слушает»).
-- Полоса прогресса: `timestamps.start = сейчас - позиция`, `timestamps.end = start + длительность`, позиция и длительность берутся из Soundpad.
-- Пауза: активность остаётся, полоса прогресса пропадает, вторая строка «На паузе» (можно отключить: `show_when_paused: false`).
-- Смена звука, перемотка, продолжение после паузы: активность обновляется.
-- Звук остановлен, Soundpad закрыт: активность убирается полностью.
-- Эмодзи в текстах нет.
+## Features
 
-## Почему Node.js 20 без зависимостей
+- **Listening** activity type with a live progress bar that follows Soundpad's real playback position.
+- Pause keeps the activity but hides the bar and shows a "paused" line (or hides it completely, configurable).
+- Switching sounds, seeking and resuming update the presence; stopping or closing Soundpad clears it.
+- Survives Soundpad and Discord restarts, reconnects automatically.
+- Respects Discord's rate limit (5 updates per 20 s) and only sends changes.
+- **Zero dependencies.** Plain Node.js 20+, its own tiny Discord IPC client, no `npm install`.
+- Runs hidden in the background with optional autostart. Practically no CPU usage.
+- Writes a small state file so other presence apps can step aside while a sound plays (see below).
 
-- Node уже стоит на ПК ради claude-rpc, ставить Python не нужно.
-- В Node встроены именованные каналы Windows (`net.connect('\\.\pipe\...')`), этого хватает и для Soundpad, и для Discord IPC. Протокол Discord IPC простой (8 байт заголовка плюс JSON), и он реализован прямо здесь, в `src/discord-ipc.js`. Старая библиотека `discord-rpc` давно не обновляется и не передаёт `type`, поэтому «Слушает» через неё не сделать.
-- Тестам хватает встроенного `node:test`, поэтому `npm install` не нужен: нет `node_modules` и нет пакетов, которые могут сломаться при обновлении.
-- Цикл раз в секунду ждёт на `setTimeout`, за один опрос уходят три короткие команды в pipe, так что нагрузки на CPU практически нет.
+## Installation
 
-## Установка
-
-1. Установите **Node.js 20 или новее** (https://nodejs.org, LTS). Проверить версию: `node --version`.
-2. Скачайте репозиторий, например в `C:\Tools\soundpad-rpc`:
+1. Install **Node.js 20 or newer** from [nodejs.org](https://nodejs.org) (LTS).
+2. Clone the repository:
    ```
    git clone https://github.com/why4m3/soundpad-rpc.git C:\Tools\soundpad-rpc
    ```
-3. Создайте приложение в Discord (см. ниже) и скопируйте его **Application ID**.
-4. Запустите один раз `windows\run-console.cmd`. Программа создаст `config.json` из `config.example.json` и напишет, что `client_id` не задан. Откройте `config.json` и вставьте ID:
+3. Create a Discord application (see below) and copy its **Application ID**.
+4. Run `windows\run-console.cmd` once. It creates `config.json` from `config.example.json`. Paste your ID:
    ```json
    "client_id": "123456789012345678",
    ```
-5. Проверьте Discord: **Настройки пользователя → Конфиденциальность активности → «Делиться информацией о моей активности»** должно быть включено. Работает только приложение Discord для ПК, браузерная версия не подойдёт.
-6. Soundpad должен быть запущен. Remote Control API работает в полной версии, в демо-версии он может быть недоступен. Проверка: `node index.js --diagnose` (см. «Проверка»).
+5. In Discord: **User Settings → Activity Privacy → Share my activity** must be on. Only the desktop app works, not the browser version.
+6. Soundpad must be running. The Remote Control API is available in the full version (it may be missing in the demo). Check with `node index.js --diagnose`.
 
-### Приложение в Discord Developer Portal
+### Discord application
 
-Приложение нужно отдельное от claude-rpc: у каждого Application ID своя активность, поэтому статусы Soundpad и Claude видны одновременно и не перезаписывают друг друга.
+1. Open the [Developer Portal](https://discord.com/developers/applications) and click **New Application**.
+2. Name it **Soundpad**: Discord shows the app name after "Listening to".
+3. Copy the **Application ID** from **General Information** into `config.json` as `client_id`.
+4. For the icon: **Rich Presence → Art Assets → Add Image(s)**, upload a square PNG/JPG (1024×1024 recommended) and name it `soundpad`. New assets can take 5–15 minutes to appear.
+5. Optionally add a second asset (e.g. `paused`) and set `"small_image_paused": "paused"`.
+6. Instead of an asset key, `large_image` can be a direct `https://...png` link.
 
-1. Откройте https://discord.com/developers/applications и нажмите **New Application**.
-2. Назовите его **Soundpad**: имя приложения Discord показывает после «Слушает», то есть получится «Слушает Soundpad».
-3. На странице **General Information** скопируйте **Application ID** и вставьте его в `config.json` как `client_id`.
-4. Картинка для `large_image`: **Rich Presence → Art Assets → Add Image(s)**. Загрузите PNG или JPG (лучше квадрат 1024x1024, минимум 512x512) и задайте ему имя **`soundpad`**: это значение `large_image` в конфиге. Нажмите **Save Changes**. Новая картинка может появиться в Discord только через 5-15 минут.
-5. Можно добавить вторую картинку, например `paused`, и вписать её в `"small_image_paused": "paused"`. Тогда на паузе будет виден маленький значок.
-6. Вместо ключа в `large_image` можно указать прямую ссылку `https://...png`, тогда загружать картинку в Developer Portal не нужно.
+## Usage
 
-## Запуск
-
-| Что | Как |
+| What | How |
 | --- | --- |
-| С окном и логом (для проверки) | `windows\run-console.cmd` или `node index.js` |
-| В фоне без окна | двойной клик по `windows\start-hidden.vbs` |
-| Остановить фоновый | `windows\stop.cmd` |
-| Посмотреть, что ушло бы в Discord, без Discord | `node index.js --dry-run` |
-| Ответы Soundpad API как есть | `node index.js --diagnose` |
-| Тестовая активность в Discord на 30 с | `node index.js --test-discord` |
-| Подробный лог | добавить `--debug` |
+| Run with a console window and log | `windows\run-console.cmd` or `node index.js` |
+| Run hidden in the background | double-click `windows\start-hidden.vbs` |
+| Stop the background process | `windows\stop.cmd` |
+| Print what would be sent, without Discord | `node index.js --dry-run` |
+| Dump raw Soundpad API answers | `node index.js --diagnose` |
+| Show a 30 s test activity in Discord | `node index.js --test-discord` |
+| Verbose log | add `--debug` |
 
-Лог пишется в `soundpad-rpc.log` рядом с программой. При размере больше 1 МБ старый лог переименовывается в `.log.1`. Второй экземпляр программы сразу завершается сам: блокировка держится через named pipe и освобождается, когда процесс завершается.
+The log goes to `soundpad-rpc.log` and rotates at 1 MB. A second instance exits immediately.
 
-## Автозапуск без окна консоли
+### Autostart
 
 ```
 windows\install-autostart.cmd
 ```
 
-Скрипт находит `node.exe`, записывает путь к нему в `windows\node-path.txt` (так автозапуск не зависит от PATH), создаёт ярлык `soundpad-rpc.lnk` в папке «Автозагрузка» (`shell:startup`) и сразу запускает программу в фоне. Ярлык запускает `wscript.exe windows\start-hidden.vbs`, а VBS стартует `node index.js` со скрытым окном.
-
-Вместо ярлыка можно сделать задачу планировщика «при входе в систему»:
+Creates a shortcut in the Startup folder that launches the app hidden, and starts it right away. To use a Task Scheduler "at logon" task instead:
 
 ```
 powershell -ExecutionPolicy Bypass -File windows\install-autostart.ps1 -Task
 ```
 
-Удалить из автозагрузки и остановить: `windows\uninstall-autostart.cmd`.
+Remove with `windows\uninstall-autostart.cmd`.
 
-После `git pull` переустанавливать автозапуск не нужно, достаточно `windows\stop.cmd` и затем `windows\start-hidden.vbs`.
+## Configuration
 
-## Как Discord упорядочивает несколько активностей и как поставить Soundpad первым
+`config.json` is created from `config.example.json` on first run and supports `//` comments.
 
-Что известно и что видно на практике:
+| Key | Default | Description |
+| --- | --- | --- |
+| `client_id` | `""` | Application ID from the Developer Portal |
+| `poll_interval_ms` | `1000` | Soundpad polling interval, ms (250–60000) |
+| `activity_type` | `2` | 2 Listening, 0 Playing, 3 Watching, 5 Competing |
+| `status_display_type` | `2` | Line under your name: 0 app name, 1 state, 2 details. `null` omits the field |
+| `details` / `state` | `{title}` / `{category}` | Line templates: `{title}` `{file}` `{artist}` `{category}` |
+| `default_category` | `Soundpad` | Second line when the sound has no category |
+| `unknown_title` | `Soundpad` | First line when the sound can't be identified |
+| `show_when_paused` | `true` | `false` hides the activity on pause |
+| `paused_state` | `На паузе` | Second line while paused (set to `Paused` for English) |
+| `large_image` / `large_text` | `soundpad` / `Soundpad` | Art Asset key (or https link) and its tooltip |
+| `small_image_paused` | `""` | Small icon shown on pause |
+| `ignored_categories` | `All sounds`, ... | Categories never shown |
+| `state_file` | `""` | State file path, default `%LOCALAPPDATA%\soundpad-rpc\state.json` |
+| `log_file` | `soundpad-rpc.log` | Log file, empty string disables it |
+| `soundpad_pipe` | `\\.\pipe\sp_remote_control` | Soundpad pipe |
+| `discord_pipe` | `""` | Specific Discord pipe, default tries `discord-ipc-0..9` |
+| `discord_retry_ms` | `15000` | Discord reconnect interval |
 
-1. **У каждого Application ID своя активность.** claude-rpc и soundpad-rpc подключаются к Discord по отдельности, каждый со своим ID, и Discord держит у пользователя список активностей. В полном профиле (клик по аватару) видны все. В списке участников сервера и в строке под ником видна одна, «главная», и её Discord выбирает сам.
-2. **Порядок задаёт клиент Discord, программа на него напрямую не влияет.** Официально алгоритм не описан, поля «приоритет» в Rich Presence нет. На практике Discord сортирует **по типу активности**: Playing (0, «Играет») стоит выше Listening (2, «Слушает»), а Listening выше Watching (3, «Смотрит»). Поэтому Spotify всегда показывается под игрой. Это же вы уже видели в claude-rpc: когда запущена игра, Claude переключается на Watching и уходит вниз.
-3. **Внутри одного типа порядок зависит от того, кто подключился или обновился раньше.** Здесь ничего не гарантировано: порядок может поменяться после перезапуска Discord, переподключения IPC или обновления клиента. Полагаться на «запущу Soundpad позже, и он будет выше» нельзя.
+## How the current sound is detected
 
-Вывод: если claude-rpc показывает Claude как **Playing**, Soundpad с типом **Listening** окажется **ниже** него, как бы ни менялся порядок подключения. Если перевести Soundpad тоже в Playing (`activity_type: 0`), оба будут одного типа и порядок станет случайным. Поэтому так делать не стоит.
+Soundpad's Remote Control API reports play status, position and duration, but **has no "what is playing" command**. soundpad-rpc infers it, in this order:
 
-**Решение:** пока в Soundpad играет звук, claude-rpc понижает свою активность до **Watching**, ровно как сейчас при запущенной игре. Тогда Listening (Soundpad) будет выше Watching (Claude). Когда звук закончится, claude-rpc вернётся к Playing. Если нужна стопроцентная гарантия, можно убирать активность Claude совсем, пока играет звук (вариант Б ниже).
+1. **Play counters.** It keeps the `GetSoundlist()` snapshot and looks for the sound whose `playCount` changed and whose duration matches.
+2. **Window text.** If `GetTitleText()` or `GetStatusBarText()` contains a sound name, that wins.
+3. **Same sound** (repeat or seek to start) when the duration matches.
+4. **Duration + recency.** Among sounds with the same duration, the most recently played one.
 
-Чтобы claude-rpc узнал, что Soundpad сейчас показан, soundpad-rpc при каждом изменении пишет маленький файл:
+Weak matches (3–4) are re-checked after 2.5 s in case Soundpad updates counters late. The log shows which method was used.
 
+## Playing nicely with other Rich Presence apps
+
+Each Application ID has its own activity, so Soundpad's status can coexist with others. Discord picks the "main" one shown under your name by activity type: **Playing** ranks above **Listening**, which ranks above **Watching**. There is no priority field.
+
+To keep Soundpad on top while a sound plays, another presence app can temporarily switch itself to Watching or clear its activity. soundpad-rpc writes `%LOCALAPPDATA%\soundpad-rpc\state.json` on every change:
+
+```json
+{ "active": true, "status": "PLAYING", "title": "Oh my", "ends_at": 1761300000000, "pid": 1234 }
 ```
-%LOCALAPPDATA%\soundpad-rpc\state.json
-{ "active": true, "status": "PLAYING", "title": "Оу май", "ends_at": 1761300000000, "pid": 1234, "updated_at": ... }
+
+A drop-in reader with no dependencies lives in [`integrations/claude-rpc/soundpad-state.cjs`](integrations/claude-rpc/soundpad-state.cjs):
+
+```js
+const { isSoundpadActive } = require('./soundpad-state.cjs');
+
+const demote = isGameRunning() || isSoundpadActive();
+// demote ? Watching (3) : Playing (0)
 ```
 
-`active: true` означает, что активность Soundpad сейчас видна (идёт воспроизведение или пауза). Файл перезаписывается атомарно и только при изменениях. Если soundpad-rpc упадёт, читатель это заметит: процесс `pid` уже не живой или время `ends_at` прошло.
+It treats a dead `pid` or an expired `ends_at` as inactive, so a crashed soundpad-rpc never blocks the other app.
 
-### Правка на стороне claude-rpc (делается в claude-rpc отдельно, здесь его код не меняется)
-
-1. Скопируйте `integrations/claude-rpc/soundpad-state.cjs` в папку claude-rpc, например в `src/soundpad-state.cjs`. Файл без зависимостей и работает и из CommonJS, и из ESM.
-2. Подключите его:
-   ```js
-   // CommonJS
-   const { isSoundpadActive } = require('./soundpad-state.cjs');
-   // ESM ("type": "module")
-   import soundpadState from './soundpad-state.cjs';
-   const { isSoundpadActive } = soundpadState;
-   ```
-3. **Вариант А (рекомендуется).** Найдите место, где claude-rpc решает «запущена игра, значит Watching», и добавьте туда Soundpad:
-   ```js
-   // было:
-   const demote = isGameRunning();
-   // стало:
-   const demote = isGameRunning() || isSoundpadActive();
-   // дальше как раньше: demote ? ActivityType.Watching (3) : ActivityType.Playing (0)
-   ```
-   **Вариант Б (всегда ниже Soundpad).** Пока играет звук, активность Claude не показывается совсем:
-   ```js
-   if (isSoundpadActive()) { await client.clearActivity(); return; }
-   ```
-4. Проверка должна выполняться периодически, а не только при событиях Claude. Если в claude-rpc уже есть таймер проверки игры, хватит той же правки. Если таймера нет, добавьте `setInterval(updatePresence, 2000)`. `isSoundpadActive()` читает один маленький файл и стоит дёшево.
-5. Учтите лимит Discord: примерно 5 обновлений активности за 20 секунд на приложение. claude-rpc должен отправлять `SET_ACTIVITY` только когда тип или текст действительно поменялся, а не на каждом тике.
-
-## Как программа понимает, какой звук играет
-
-В Soundpad Remote Control API есть `GetPlayStatus()` (`PLAYING` / `PAUSED` / `STOPPED` / `SEEKING`), `GetPlaybackPositionInMs()` и `GetPlaybackDurationInMs()`, но **команды «какой звук сейчас играет» нет**. Поэтому звук определяется по косвенным признакам, в таком порядке:
-
-1. **Счётчики.** Программа запоминает список `GetSoundlist()` (`playCount`, `lastPlayedOn` каждого звука). Когда начинается новое воспроизведение, она снова читает список и ищет звук, у которого изменился счётчик и совпадает длительность.
-2. **Текст окна.** Если `GetTitleText()` или `GetStatusBarText()` содержат имя звука, используется оно.
-3. **Тот же звук** (повтор, перемотка в начало), если длительность совпадает.
-4. **Длительность и время.** Ищется звук с такой же длительностью, при нескольких совпадениях берётся последний проигранный (`lastPlayedOn`).
-
-Если способ ненадёжный (п. 3-4), через 2,5 с проверка повторяется: на случай, если Soundpad обновляет счётчик с задержкой. Каким способом найден звук, видно в логе: `Звук: Оу май [Русские мемы] (способ: counter)`.
-
-Название звука берётся из поля «Название» (title) в Soundpad, а если оно пустое, из имени файла без расширения. Категория определяется через `GetCategories(true, false)`, служебная «Все звуки» пропускается (`ignored_categories`). Если категории нет, во второй строке пишется `Soundpad`.
-
-Если `GetPlaybackPositionInMs()` не отвечает, позиция считается самостоятельно от момента начала воспроизведения, с учётом пауз.
-
-## Проверка
-
-Автотесты (Soundpad и Discord не нужны, имитируются фейковыми pipe-серверами):
+## Development
 
 ```
 npm test
 ```
 
-Что покрыто тестами: разбор `GetPlayStatus`, чисел и кодов `R-xxx`, XML `GetSoundlist` и `GetCategories` (сущности, кириллица, пустой список, длительности `m:ss` и `h:mm:ss`, даты), склейка XML, пришедшего несколькими кусками; определение звука всеми способами; построение активности (воспроизведение, пауза, стоп, длинные и короткие строки); кадры Discord IPC, handshake, отказ по неверному client_id, PING/PONG, переподключение; полный цикл «играет → пауза → перемотка → другой звук → стоп → Soundpad закрыт», лимит 5 обновлений за 20 с, файл состояния и хелпер для claude-rpc.
-
-### Чек-лист ручной проверки на ПК
-
-Проверить вживую в облаке было нельзя, поэтому пройдите по шагам. Если пункт не сработал, пришлите вывод `node index.js --diagnose` и кусок `soundpad-rpc.log`.
-
-1. [ ] `node --version` показывает v20 или новее, `npm test` проходит без ошибок.
-2. [ ] Soundpad запущен. `node index.js --diagnose` печатает `IsAlive() -> R-200`, `GetPlayStatus() -> STOPPED` и список последних звуков.
-3. [ ] Включите звук и сразу повторите `--diagnose`: `GetPlayStatus() -> PLAYING`, позиция и длительность (мс) не нулевые. Посмотрите, что показывают `GetTitleText()` и `GetStatusBarText()` во время воспроизведения.
-4. [ ] Discord для ПК запущен. `node index.js --test-discord`: в профиле появилось «Слушает Soundpad», «Тестовый звук», полоса прогресса на 30 с и картинка. Если картинки нет, проверьте ключ `soundpad` в Art Assets или подождите 15 минут.
-5. [ ] `windows\run-console.cmd`: включите звук. Через 1-2 с в профиле видны название звука и категория, полоса прогресса совпадает с Soundpad. В логе строка `Звук: ... (способ: ...)` с правильным звуком.
-6. [ ] Пауза в Soundpad: полоса прогресса пропала, вторая строка «На паузе». Продолжение: полоса вернулась с правильной позиции.
-7. [ ] Перемотка внутри звука: полоса прогресса сдвинулась (в пределах 1-2 с).
-8. [ ] Быстро включите другой звук, потом ещё раз тот же: название меняется на правильное. Если звук определяется неверно, пришлите лог с `--debug`.
-9. [ ] Stop в Soundpad или звук доиграл до конца: активность Soundpad исчезла из профиля полностью.
-10. [ ] Закройте Soundpad во время воспроизведения: активность исчезла. Запустите Soundpad снова: всё работает без перезапуска soundpad-rpc.
-11. [ ] Перезапустите Discord: после запуска активность вернулась (переподключение раз в 15 с).
-12. [ ] Пока звук играет, откройте `%LOCALAPPDATA%\soundpad-rpc\state.json`: там `"active": true`. После стопа должно стать `false`.
-13. [ ] После правки claude-rpc: запустите Claude Code, чтобы появился его статус, и включите звук. В профиле Soundpad («Слушает») выше Claude, Claude переключился на «Смотрит». Через несколько секунд после конца звука Claude снова «Играет».
-14. [ ] `windows\install-autostart.cmd`, затем перезагрузка или выход из системы и вход: окна консоли нет, в диспетчере задач есть `node.exe`, статус работает. `windows\stop.cmd` останавливает программу.
-15. [ ] Двойной запуск `start-hidden.vbs` не создаёт второй процесс `node.exe`.
-
-## Настройки (`config.json`)
-
-`config.json` не хранится в git, его создаёт программа из `config.example.json`. В файле можно писать комментарии `//`.
-
-| Ключ | По умолчанию | Что делает |
-| --- | --- | --- |
-| `client_id` | `""` | Application ID приложения Soundpad из Developer Portal |
-| `poll_interval_ms` | `1000` | Интервал опроса Soundpad, мс (250-60000) |
-| `activity_type` | `2` | 2 Listening, 0 Playing, 3 Watching, 5 Competing |
-| `status_display_type` | `2` | Что видно в строке под ником: 0 имя приложения («Слушает Soundpad»), 1 state, 2 details (название звука). `null` значит не передавать поле |
-| `details` / `state` | `{title}` / `{category}` | Шаблоны строк, подстановки `{title}` `{file}` `{artist}` `{category}` |
-| `default_category` | `Soundpad` | Вторая строка, если у звука нет категории |
-| `unknown_title` | `Soundpad` | Первая строка, если звук не удалось определить |
-| `show_when_paused` | `true` | `false`: на паузе активность убирается |
-| `paused_state` | `На паузе` | Вторая строка на паузе |
-| `large_image` / `large_text` | `soundpad` / `Soundpad` | Ключ картинки из Art Assets (или https-ссылка) и подсказка к ней |
-| `small_image_paused` | `""` | Ключ маленькой картинки на паузе |
-| `ignored_categories` | `All sounds`, `Все звуки`, ... | Категории, которые не показывать |
-| `state_file` | `""` | Путь к файлу состояния для claude-rpc, по умолчанию `%LOCALAPPDATA%\soundpad-rpc\state.json` |
-| `log_file` | `soundpad-rpc.log` | Лог, пустая строка отключает его |
-| `soundpad_pipe` | `\\.\pipe\sp_remote_control` | Pipe Soundpad |
-| `discord_pipe` | `""` | Конкретный pipe Discord, по умолчанию перебираются `discord-ipc-0..9` |
-| `discord_retry_ms` | `15000` | Как часто пытаться переподключиться к Discord |
-
-## Устройство
+42 tests on the built-in `node:test` runner, with fake Soundpad and Discord pipe servers, so neither app is needed. They cover the Soundpad protocol parser, sound detection, presence building, Discord IPC framing and handshake, reconnects, rate limiting and the full play → pause → seek → switch → stop cycle.
 
 ```
-index.js                     запуск, режимы --dry-run / --diagnose / --test-discord, один экземпляр
-src/soundpad-protocol.js     разбор ответов Soundpad API (чистые функции)
-src/soundpad-client.js       named pipe Soundpad: очередь команд, склейка ответа, таймауты
-src/discord-ipc.js           Discord IPC: кадры, handshake, SET_ACTIVITY, PING/PONG
-src/presence.js              какой звук играет, какую активность показать, когда обновлять
-src/app.js                   цикл опроса, лимит обновлений, файл состояния
-src/state-file.js            state.json для claude-rpc
-integrations/claude-rpc/     хелпер isSoundpadActive() для claude-rpc
-windows/                     start-hidden.vbs, автозапуск, остановка, запуск с консолью
-test/                        node:test, фейковые Soundpad и Discord
+index.js                  entry point, CLI modes, single instance lock
+src/soundpad-protocol.js  Soundpad API response parsing (pure functions)
+src/soundpad-client.js    Soundpad named pipe: command queue, timeouts
+src/discord-ipc.js        Discord IPC: framing, handshake, SET_ACTIVITY, PING/PONG
+src/presence.js           sound detection and activity building
+src/app.js                polling loop, rate limit, state file
+src/state-file.js         state.json writer
+integrations/             helper for other presence apps
+windows/                  hidden start, autostart, stop scripts
+test/                     node:test suites and fixtures
 ```
 
-Команды Soundpad Remote Control взяты из официального референса Leppsoft (`SoundpadRemoteControl.java`) и библиотеки soundpad.js: `GetPlayStatus()`, `GetPlaybackPositionInMs()`, `GetPlaybackDurationInMs()`, `GetSoundlist()`, `GetCategories(withSounds, withIcons)`, `GetTitleText()`, `GetStatusBarText()`, `IsAlive()`. Ответы приходят текстом, ошибки приходят как `R-<код>`.
+Soundpad commands follow Leppsoft's official `SoundpadRemoteControl.java` reference.
+
+## License
+
+[MIT](LICENSE)

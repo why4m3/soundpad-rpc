@@ -22,7 +22,7 @@ test('comments are stripped, strings with // are kept', () => {
 });
 
 test('normalization and validation', () => {
-  const cfg = normalizeConfig({ client_id: 123456789012345678n.toString(), poll_interval_ms: 5, activity_type: 9, status_display_type: null }, { env: { LOCALAPPDATA: 'C:\\Users\\Alex\\AppData\\Local' } });
+  const cfg = normalizeConfig({ client_id: 123456789012345678n.toString(), poll_interval_ms: 5, activity_type: 9, status_display_type: null }, { env: { LOCALAPPDATA: 'C:\\Users\\User\\AppData\\Local' } });
   assert.equal(cfg.poll_interval_ms, 250);
   assert.equal(cfg.activity_type, 2);
   assert.equal(cfg.status_display_type, null);
