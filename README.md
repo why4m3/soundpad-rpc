@@ -39,9 +39,10 @@ Memes                           <- Soundpad category (state)
 No Node.js or git needed.
 
 1. Download `soundpad-rpc-vX.Y.Z-win-x64.zip` from [Releases](https://github.com/why4m3/soundpad-rpc/releases/latest) and unpack it anywhere, e.g. `C:\Tools\soundpad-rpc`.
-2. Create a Discord application (see below) and copy its **Application ID**.
-3. Run `windows\run-console.cmd` once. It creates `config.json` next to `soundpad-rpc.exe`. Paste your ID into `client_id` and run it again.
-4. When it works, run `windows\install-autostart.cmd` so it starts hidden with Windows.
+2. Run `windows\run-console.cmd`, play a sound in Soundpad and check your Discord profile.
+3. When it works, run `windows\install-autostart.cmd` so it starts hidden with Windows.
+
+No Discord application is needed: by default it uses the shared "Soundpad" app. To change the picture or the name, see [Picture and name](#picture-and-name).
 
 Windows SmartScreen may warn about an unknown publisher because the exe is not code-signed: **More info → Run anyway**. The exe is built by GitHub Actions straight from this repository ([release workflow](.github/workflows/release.yml)).
 
@@ -54,22 +55,24 @@ The same Discord and Soundpad requirements apply: **User Settings → Activity P
    ```
    git clone https://github.com/why4m3/soundpad-rpc.git C:\Tools\soundpad-rpc
    ```
-3. Create a Discord application (see below) and copy its **Application ID**.
-4. Run `windows\run-console.cmd` once. It creates `config.json` from `config.example.json`. Paste your ID:
-   ```json
-   "client_id": "123456789012345678",
-   ```
-5. In Discord: **User Settings → Activity Privacy → Share my activity** must be on. Only the desktop app works, not the browser version.
-6. Soundpad must be running. The Remote Control API is available in the full version (it may be missing in the demo). Check with `node index.js --diagnose`.
+3. Run `windows\run-console.cmd`. On the first run it creates `config.json` from `config.example.json`.
+4. In Discord: **User Settings → Activity Privacy → Share my activity** must be on. Only the desktop app works, not the browser version.
+5. Soundpad must be running. The Remote Control API is available in the full version (it may be missing in the demo). Check with `node index.js --diagnose`.
 
-### Discord application
+### Picture and name
 
-1. Open the [Developer Portal](https://discord.com/developers/applications) and click **New Application**.
-2. Name it **Soundpad**: Discord shows the app name after "Listening to".
-3. Copy the **Application ID** from **General Information** into `config.json` as `client_id`.
-4. For the icon: **Rich Presence → Art Assets → Add Image(s)**, upload a square PNG/JPG (512×512 or larger, e.g. the bundled [`assets/logo.png`](assets/logo.png)) and name it `soundpad`. New assets can take 5–15 minutes to appear.
-5. Optionally add a second asset (e.g. `paused`) and set `"small_image_paused": "paused"`.
-6. Instead of an asset key, `large_image` can be a direct `https://...png` link.
+**Your own picture.** Put a direct link to any image into `config.json`, no Discord application needed:
+
+```json
+"large_image": "https://example.com/my-picture.png",
+```
+
+**Your own name** after "Listening to" (and pictures uploaded to Discord) needs your own Discord application:
+
+1. Open the [Developer Portal](https://discord.com/developers/applications) and click **New Application**. Its name is what Discord shows after "Listening to".
+2. Copy the **Application ID** from **General Information** into `config.json` as `client_id`.
+3. For pictures: **Rich Presence → Art Assets → Add Image(s)**, upload a square PNG/JPG (512×512 or larger, e.g. the bundled [`assets/logo.png`](assets/logo.png)) and name it `soundpad`, or any other key you then put into `large_image`. New assets can take 5–15 minutes to appear.
+4. Optionally add a second asset (e.g. `paused`) and set `"small_image_paused": "paused"`.
 
 ## Usage
 
@@ -108,7 +111,7 @@ Remove with `windows\uninstall-autostart.cmd`.
 
 | Key | Default | Description |
 | --- | --- | --- |
-| `client_id` | `""` | Application ID from the Developer Portal |
+| `client_id` | `""` | Own Application ID; empty uses the shared "Soundpad" app |
 | `poll_interval_ms` | `1000` | Soundpad polling interval, ms (250–60000) |
 | `activity_type` | `2` | 2 Listening, 0 Playing, 3 Watching, 5 Competing |
 | `status_display_type` | `2` | Line under your name: 0 app name, 1 state, 2 details. `null` omits the field |
@@ -117,7 +120,7 @@ Remove with `windows\uninstall-autostart.cmd`.
 | `unknown_title` | `Soundpad` | First line when the sound can't be identified |
 | `show_when_paused` | `true` | `false` hides the activity on pause |
 | `paused_state` | `На паузе` | Second line while paused (set to `Paused` for English) |
-| `large_image` / `large_text` | `soundpad` / `Soundpad` | Art Asset key (or https link) and its tooltip |
+| `large_image` / `large_text` | `soundpad` / `Soundpad` | https link to a picture, or an Art Asset key of your own app; tooltip |
 | `small_image_paused` | `""` | Small icon shown on pause |
 | `ignored_categories` | `All sounds`, ... | Categories never shown |
 | `state_file` | `""` | State file path, default `%LOCALAPPDATA%\soundpad-rpc\state.json` |

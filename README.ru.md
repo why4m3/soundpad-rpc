@@ -36,13 +36,14 @@ Discord Rich Presence для Soundpad в стиле Spotify. Пока в Soundpa
 Node.js и git не нужны.
 
 1. Скачайте `soundpad-rpc-vX.Y.Z-win-x64.zip` из [Releases](https://github.com/why4m3/soundpad-rpc/releases/latest) и распакуйте куда угодно, например в `C:\Tools\soundpad-rpc`.
-2. Создайте приложение в Discord (см. ниже) и скопируйте его **Application ID**.
-3. Запустите один раз `windows\run-console.cmd`. Рядом с `soundpad-rpc.exe` появится `config.json`. Вставьте ID в `client_id` и запустите снова.
-4. Когда всё заработает, запустите `windows\install-autostart.cmd`, и программа будет стартовать вместе с Windows без окна.
+2. Запустите `windows\run-console.cmd`, включите звук в Soundpad и посмотрите свой профиль в Discord.
+3. Когда всё заработает, запустите `windows\install-autostart.cmd`, и программа будет стартовать вместе с Windows без окна.
+
+Создавать приложение в Discord не нужно: по умолчанию используется общее приложение «Soundpad». Как поменять картинку или название, см. [«Картинка и название»](#картинка-и-название).
 
 Windows SmartScreen может предупредить о неизвестном издателе, потому что exe не подписан сертификатом: **Подробнее → Выполнить в любом случае**. Exe собирается GitHub Actions прямо из этого репозитория ([workflow релиза](.github/workflows/release.yml)).
 
-Требования к Discord и Soundpad те же, что ниже в пунктах 5 и 6.
+Требования к Discord и Soundpad те же, что ниже в пунктах 4 и 5.
 
 ### Из исходников
 
@@ -51,24 +52,24 @@ Windows SmartScreen может предупредить о неизвестно�
    ```
    git clone https://github.com/why4m3/soundpad-rpc.git C:\Tools\soundpad-rpc
    ```
-3. Создайте приложение в Discord (см. ниже) и скопируйте его **Application ID**.
-4. Запустите один раз `windows\run-console.cmd`. Программа создаст `config.json` из `config.example.json` и напишет, что `client_id` не задан. Откройте `config.json` и вставьте ID:
-   ```json
-   "client_id": "123456789012345678",
-   ```
-5. Проверьте Discord: **Настройки пользователя → Конфиденциальность активности → «Делиться информацией о моей активности»** должно быть включено. Работает только приложение Discord для ПК, браузерная версия не подойдёт.
-6. Soundpad должен быть запущен. Remote Control API работает в полной версии, в демо-версии он может быть недоступен. Проверка: `node index.js --diagnose` (см. «Проверка»).
+3. Запустите `windows\run-console.cmd`. При первом запуске программа создаст `config.json` из `config.example.json`.
+4. Проверьте Discord: **Настройки пользователя → Конфиденциальность активности → «Делиться информацией о моей активности»** должно быть включено. Работает только приложение Discord для ПК, браузерная версия не подойдёт.
+5. Soundpad должен быть запущен. Remote Control API работает в полной версии, в демо-версии он может быть недоступен. Проверка: `node index.js --diagnose` (см. «Проверка»).
 
-### Приложение в Discord Developer Portal
+### Картинка и название
 
-Приложение нужно отдельное от claude-rpc: у каждого Application ID своя активность, поэтому статусы Soundpad и Claude видны одновременно и не перезаписывают друг друга.
+**Своя картинка.** Вставьте в `config.json` прямую ссылку на любую картинку, приложение в Discord для этого не нужно:
 
-1. Откройте https://discord.com/developers/applications и нажмите **New Application**.
-2. Назовите его **Soundpad**: имя приложения Discord показывает после «Слушает», то есть получится «Слушает Soundpad».
-3. На странице **General Information** скопируйте **Application ID** и вставьте его в `config.json` как `client_id`.
-4. Картинка для `large_image`: **Rich Presence → Art Assets → Add Image(s)**. Загрузите PNG или JPG (квадрат, минимум 512x512; подойдёт готовый [`assets/logo.png`](assets/logo.png)) и задайте ему имя **`soundpad`**: это значение `large_image` в конфиге. Нажмите **Save Changes**. Новая картинка может появиться в Discord только через 5-15 минут.
-5. Можно добавить вторую картинку, например `paused`, и вписать её в `"small_image_paused": "paused"`. Тогда на паузе будет виден маленький значок.
-6. Вместо ключа в `large_image` можно указать прямую ссылку `https://...png`, тогда загружать картинку в Developer Portal не нужно.
+```json
+"large_image": "https://example.com/my-picture.png",
+```
+
+**Своё название** после «Слушает» (и картинки, загруженные в Discord) требует своего приложения в Discord Developer Portal. Оно должно отличаться от приложения claude-rpc: у каждого Application ID своя активность, поэтому статусы Soundpad и Claude видны одновременно и не перезаписывают друг друга.
+
+1. Откройте https://discord.com/developers/applications и нажмите **New Application**. Его имя Discord показывает после «Слушает».
+2. На странице **General Information** скопируйте **Application ID** и вставьте его в `config.json` как `client_id`.
+3. Картинка для `large_image`: **Rich Presence → Art Assets → Add Image(s)**. Загрузите PNG или JPG (квадрат, минимум 512x512; подойдёт готовый [`assets/logo.png`](assets/logo.png)) и задайте ему имя **`soundpad`** (или любое другое, которое затем впишете в `large_image`). Нажмите **Save Changes**. Новая картинка может появиться в Discord только через 5-15 минут.
+4. Можно добавить вторую картинку, например `paused`, и вписать её в `"small_image_paused": "paused"`. Тогда на паузе будет виден маленький значок.
 
 ## Запуск
 
@@ -203,7 +204,7 @@ npm test
 
 | Ключ | По умолчанию | Что делает |
 | --- | --- | --- |
-| `client_id` | `""` | Application ID приложения Soundpad из Developer Portal |
+| `client_id` | `""` | Свой Application ID; пусто = общее приложение «Soundpad» |
 | `poll_interval_ms` | `1000` | Интервал опроса Soundpad, мс (250-60000) |
 | `activity_type` | `2` | 2 Listening, 0 Playing, 3 Watching, 5 Competing |
 | `status_display_type` | `2` | Что видно в строке под ником: 0 имя приложения («Слушает Soundpad»), 1 state, 2 details (название звука). `null` значит не передавать поле |
@@ -212,7 +213,7 @@ npm test
 | `unknown_title` | `Soundpad` | Первая строка, если звук не удалось определить |
 | `show_when_paused` | `true` | `false`: на паузе активность убирается |
 | `paused_state` | `На паузе` | Вторая строка на паузе |
-| `large_image` / `large_text` | `soundpad` / `Soundpad` | Ключ картинки из Art Assets (или https-ссылка) и подсказка к ней |
+| `large_image` / `large_text` | `soundpad` / `Soundpad` | https-ссылка на картинку или ключ из Art Assets своего приложения; подсказка |
 | `small_image_paused` | `""` | Ключ маленькой картинки на паузе |
 | `ignored_categories` | `All sounds`, `Все звуки`, ... | Категории, которые не показывать |
 | `state_file` | `""` | Путь к файлу состояния для claude-rpc, по умолчанию `%LOCALAPPDATA%\soundpad-rpc\state.json` |

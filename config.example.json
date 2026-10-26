@@ -1,5 +1,7 @@
 {
-  // Application ID приложения Soundpad из Discord Developer Portal (только цифры).
+  // Application ID приложения Discord. Пусто = общее приложение "Soundpad",
+  // ничего создавать не нужно. Свой ID (Discord Developer Portal, только цифры)
+  // нужен, только если хотите другое название после "Слушает".
   // Должен отличаться от Application ID, который использует claude-rpc.
   "client_id": "",
 
@@ -23,7 +25,8 @@
   "show_when_paused": true,
   "paused_state": "На паузе",
 
-  // Ключи картинок из Rich Presence -> Art Assets (или https-ссылка).
+  // Картинка: прямая https-ссылка на любую картинку (работает и с общим
+  // приложением) или ключ из Rich Presence -> Art Assets своего приложения.
   "large_image": "soundpad",
   "large_text": "Soundpad",
   "small_image_paused": "",

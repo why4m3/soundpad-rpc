@@ -28,7 +28,9 @@ test('normalization and validation', () => {
   assert.equal(cfg.status_display_type, null);
   assert.ok(cfg.state_file.includes('soundpad-rpc'));
   assert.deepEqual(validateConfig(cfg), []);
-  assert.equal(validateConfig(normalizeConfig({}, { env: {} })).length, 1);
+  assert.equal(normalizeConfig({}, { env: {} }).client_id, DEFAULTS.client_id);
+  assert.equal(normalizeConfig({ client_id: ' ' }, { env: {} }).client_id, DEFAULTS.client_id);
+  assert.deepEqual(validateConfig(normalizeConfig({}, { env: {} })), []);
   assert.match(validateConfig(normalizeConfig({ client_id: 'abc' }, { env: {} }))[0], /цифр/);
 });
 

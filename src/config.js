@@ -12,7 +12,7 @@ function isPackaged() {
 const APP_DIR = isPackaged() ? path.dirname(process.execPath) : path.resolve(__dirname, '..');
 
 const DEFAULTS = Object.freeze({
-  client_id: '',
+  client_id: '1563489974651977758', // shared "Soundpad" app, an own ID only changes the name
   poll_interval_ms: 1000,
   activity_type: 2, // 2 = Listening ("Слушает")
   status_display_type: 2, // 0 = app name, 1 = state, 2 = details in the member list line
@@ -63,7 +63,7 @@ function stripJsonComments(text) {
 
 function normalizeConfig(raw, { env = process.env, baseDir = APP_DIR } = {}) {
   const cfg = { ...DEFAULTS, ...(raw || {}) };
-  cfg.client_id = String(cfg.client_id || '').trim();
+  cfg.client_id = String(cfg.client_id || '').trim() || DEFAULTS.client_id;
   const interval = Number(cfg.poll_interval_ms);
   cfg.poll_interval_ms = Number.isFinite(interval) ? Math.min(Math.max(Math.round(interval), 250), 60000) : DEFAULTS.poll_interval_ms;
   cfg.activity_type = [0, 2, 3, 5].includes(Number(cfg.activity_type)) ? Number(cfg.activity_type) : 2;
