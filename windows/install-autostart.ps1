@@ -9,12 +9,18 @@ $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $vbs = Join-Path $here 'start-hidden.vbs'
 $wscript = Join-Path $env:WINDIR 'System32\wscript.exe'
 
-$node = Get-Command node.exe -ErrorAction SilentlyContinue
-if (-not $node) { throw 'Node.js не найден в PATH. Установите Node.js 20+ с https://nodejs.org' }
-$ver = (& $node.Source --version)
-if ([int]($ver.TrimStart('v').Split('.')[0]) -lt 20) { Write-Warning "Node ${ver}: рекомендуется 20+" }
-Set-Content -Path (Join-Path $here 'node-path.txt') -Value $node.Source -Encoding ASCII
-Write-Host "Node: $($node.Source) ($ver)"
+# Релизная сборка (soundpad-rpc.exe рядом) Node.js не требует.
+$exe = Join-Path (Split-Path -Parent $here) 'soundpad-rpc.exe'
+if (Test-Path $exe) {
+  Write-Host "Программа: $exe"
+} else {
+  $node = Get-Command node.exe -ErrorAction SilentlyContinue
+  if (-not $node) { throw 'Node.js не найден в PATH. Установите Node.js 20+ с https://nodejs.org или скачайте готовую сборку из Releases' }
+  $ver = (& $node.Source --version)
+  if ([int]($ver.TrimStart('v').Split('.')[0]) -lt 20) { Write-Warning "Node ${ver}: рекомендуется 20+" }
+  Set-Content -Path (Join-Path $here 'node-path.txt') -Value $node.Source -Encoding ASCII
+  Write-Host "Node: $($node.Source) ($ver)"
+}
 
 $name = 'soundpad-rpc'
 $lnk = Join-Path ([Environment]::GetFolderPath('Startup')) "$name.lnk"

@@ -4,7 +4,12 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 
-const APP_DIR = path.resolve(__dirname, '..');
+// Packaged as a single executable (release build) the app lives next to the
+// .exe; from source it is the repository root.
+function isPackaged() {
+  try { return require('node:sea').isSea(); } catch { return false; }
+}
+const APP_DIR = isPackaged() ? path.dirname(process.execPath) : path.resolve(__dirname, '..');
 
 const DEFAULTS = Object.freeze({
   client_id: '',

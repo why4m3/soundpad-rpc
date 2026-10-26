@@ -5,7 +5,7 @@ $stopped = $false
 if (Test-Path $pidFile) {
   $procId = [int](Get-Content $pidFile -Raw)
   $p = Get-Process -Id $procId -ErrorAction SilentlyContinue
-  if ($p -and $p.ProcessName -eq 'node') {
+  if ($p -and $p.ProcessName -in @('node', 'soundpad-rpc')) {
     Stop-Process -Id $procId -Force
     $stopped = $true
     Write-Host "soundpad-rpc остановлен (pid $procId)"

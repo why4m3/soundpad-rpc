@@ -2,6 +2,10 @@
 
 [English](README.md) | **Русский**
 
+[![Скачать](https://img.shields.io/github/v/release/why4m3/soundpad-rpc?label=скачать&logo=windows&color=0078D6)](https://github.com/why4m3/soundpad-rpc/releases/latest)
+
+<p align="center"><img src="docs/presence.png" alt="Слушает Soundpad в Discord" width="496"></p>
+
 Discord Rich Presence для Soundpad в стиле Spotify. Пока в Soundpad играет звук, в профиле Discord видно:
 
 ```
@@ -27,6 +31,21 @@ Discord Rich Presence для Soundpad в стиле Spotify. Пока в Soundpa
 
 ## Установка
 
+### Готовая сборка (проще всего)
+
+Node.js и git не нужны.
+
+1. Скачайте `soundpad-rpc-vX.Y.Z-win-x64.zip` из [Releases](https://github.com/why4m3/soundpad-rpc/releases/latest) и распакуйте куда угодно, например в `C:\Tools\soundpad-rpc`.
+2. Создайте приложение в Discord (см. ниже) и скопируйте его **Application ID**.
+3. Запустите один раз `windows\run-console.cmd`. Рядом с `soundpad-rpc.exe` появится `config.json`. Вставьте ID в `client_id` и запустите снова.
+4. Когда всё заработает, запустите `windows\install-autostart.cmd`, и программа будет стартовать вместе с Windows без окна.
+
+Windows SmartScreen может предупредить о неизвестном издателе, потому что exe не подписан сертификатом: **Подробнее → Выполнить в любом случае**. Exe собирается GitHub Actions прямо из этого репозитория ([workflow релиза](.github/workflows/release.yml)).
+
+Требования к Discord и Soundpad те же, что ниже в пунктах 5 и 6.
+
+### Из исходников
+
 1. Установите **Node.js 20 или новее** (https://nodejs.org, LTS). Проверить версию: `node --version`.
 2. Скачайте репозиторий, например в `C:\Tools\soundpad-rpc`:
    ```
@@ -47,7 +66,7 @@ Discord Rich Presence для Soundpad в стиле Spotify. Пока в Soundpa
 1. Откройте https://discord.com/developers/applications и нажмите **New Application**.
 2. Назовите его **Soundpad**: имя приложения Discord показывает после «Слушает», то есть получится «Слушает Soundpad».
 3. На странице **General Information** скопируйте **Application ID** и вставьте его в `config.json` как `client_id`.
-4. Картинка для `large_image`: **Rich Presence → Art Assets → Add Image(s)**. Загрузите PNG или JPG (лучше квадрат 1024x1024, минимум 512x512) и задайте ему имя **`soundpad`**: это значение `large_image` в конфиге. Нажмите **Save Changes**. Новая картинка может появиться в Discord только через 5-15 минут.
+4. Картинка для `large_image`: **Rich Presence → Art Assets → Add Image(s)**. Загрузите PNG или JPG (квадрат, минимум 512x512; подойдёт готовый [`assets/logo.png`](assets/logo.png)) и задайте ему имя **`soundpad`**: это значение `large_image` в конфиге. Нажмите **Save Changes**. Новая картинка может появиться в Discord только через 5-15 минут.
 5. Можно добавить вторую картинку, например `paused`, и вписать её в `"small_image_paused": "paused"`. Тогда на паузе будет виден маленький значок.
 6. Вместо ключа в `large_image` можно указать прямую ссылку `https://...png`, тогда загружать картинку в Developer Portal не нужно.
 
@@ -62,6 +81,9 @@ Discord Rich Presence для Soundpad в стиле Spotify. Пока в Soundpa
 | Ответы Soundpad API как есть | `node index.js --diagnose` |
 | Тестовая активность в Discord на 30 с | `node index.js --test-discord` |
 | Подробный лог | добавить `--debug` |
+| Версия | `--version` |
+
+В готовой сборке вместо `node index.js` пишите `soundpad-rpc.exe`.
 
 Лог пишется в `soundpad-rpc.log` рядом с программой. При размере больше 1 МБ старый лог переименовывается в `.log.1`. Второй экземпляр программы сразу завершается сам: блокировка держится через named pipe и освобождается, когда процесс завершается.
 

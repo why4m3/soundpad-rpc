@@ -8,6 +8,10 @@
 
 **English** | [Русский](README.ru.md)
 
+[![Download](https://img.shields.io/github/v/release/why4m3/soundpad-rpc?label=download&logo=windows&color=0078D6)](https://github.com/why4m3/soundpad-rpc/releases/latest)
+
+<p align="center"><img src="docs/presence.png" alt="Listening to Soundpad in Discord" width="496"></p>
+
 Spotify-style Discord Rich Presence for [Soundpad](https://leppsoft.com/soundpad/). While a sound is playing, your Discord profile shows:
 
 ```
@@ -30,6 +34,21 @@ Memes                           <- Soundpad category (state)
 
 ## Installation
 
+### Download (recommended)
+
+No Node.js or git needed.
+
+1. Download `soundpad-rpc-vX.Y.Z-win-x64.zip` from [Releases](https://github.com/why4m3/soundpad-rpc/releases/latest) and unpack it anywhere, e.g. `C:\Tools\soundpad-rpc`.
+2. Create a Discord application (see below) and copy its **Application ID**.
+3. Run `windows\run-console.cmd` once. It creates `config.json` next to `soundpad-rpc.exe`. Paste your ID into `client_id` and run it again.
+4. When it works, run `windows\install-autostart.cmd` so it starts hidden with Windows.
+
+Windows SmartScreen may warn about an unknown publisher because the exe is not code-signed: **More info → Run anyway**. The exe is built by GitHub Actions straight from this repository ([release workflow](.github/workflows/release.yml)).
+
+The same Discord and Soundpad requirements apply: **User Settings → Activity Privacy → Share my activity** on, desktop Discord, full version of Soundpad.
+
+### From source
+
 1. Install **Node.js 20 or newer** from [nodejs.org](https://nodejs.org) (LTS).
 2. Clone the repository:
    ```
@@ -48,7 +67,7 @@ Memes                           <- Soundpad category (state)
 1. Open the [Developer Portal](https://discord.com/developers/applications) and click **New Application**.
 2. Name it **Soundpad**: Discord shows the app name after "Listening to".
 3. Copy the **Application ID** from **General Information** into `config.json` as `client_id`.
-4. For the icon: **Rich Presence → Art Assets → Add Image(s)**, upload a square PNG/JPG (1024×1024 recommended) and name it `soundpad`. New assets can take 5–15 minutes to appear.
+4. For the icon: **Rich Presence → Art Assets → Add Image(s)**, upload a square PNG/JPG (512×512 or larger, e.g. the bundled [`assets/logo.png`](assets/logo.png)) and name it `soundpad`. New assets can take 5–15 minutes to appear.
 5. Optionally add a second asset (e.g. `paused`) and set `"small_image_paused": "paused"`.
 6. Instead of an asset key, `large_image` can be a direct `https://...png` link.
 
@@ -63,6 +82,9 @@ Memes                           <- Soundpad category (state)
 | Dump raw Soundpad API answers | `node index.js --diagnose` |
 | Show a 30 s test activity in Discord | `node index.js --test-discord` |
 | Verbose log | add `--debug` |
+| Print the version | `--version` |
+
+With the release build use `soundpad-rpc.exe` instead of `node index.js`.
 
 The log goes to `soundpad-rpc.log` and rotates at 1 MB. A second instance exits immediately.
 
@@ -156,6 +178,15 @@ integrations/             helper for other presence apps
 windows/                  hidden start, autostart, stop scripts
 test/                     node:test suites and fixtures
 ```
+
+### Building the exe
+
+```
+npm i --no-save esbuild@0.25.0 postject@1.0.0-alpha.6 rcedit@4.0.1
+node scripts/build-exe.js
+```
+
+This bundles the app into a [Node.js single executable](https://nodejs.org/api/single-executable-applications.html) in `dist/soundpad-rpc/`. Pushing a `v*` tag runs the same build on GitHub Actions and publishes the zip as a release.
 
 Soundpad commands follow Leppsoft's official `SoundpadRemoteControl.java` reference.
 

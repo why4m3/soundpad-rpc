@@ -8,6 +8,7 @@
 //   node index.js --diagnose      print raw Soundpad API answers and exit
 //   node index.js --test-discord  show a 30 s demo activity and exit
 //   node index.js --debug         more log lines
+//   node index.js --version       print the version and exit
 
 const fs = require('node:fs');
 const net = require('node:net');
@@ -120,6 +121,10 @@ async function testDiscord(config) {
 }
 
 async function main() {
+  if (args.has('--version')) {
+    console.log('soundpad-rpc ' + require('./package.json').version);
+    return 0;
+  }
   const major = Number(process.versions.node.split('.')[0]);
   if (major < MIN_NODE) {
     console.error('Нужен Node.js ' + MIN_NODE + '+ (лучше 20+), сейчас ' + process.version);

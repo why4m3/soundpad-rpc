@@ -1,0 +1,57 @@
+name: release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm test
+      - run: npm i --no-save --no-package-lock esbuild@0.25.0 postject@1.0.0-alpha.6 rcedit@4.0.1
+      - run: node scripts/build-exe.js
+
+      - name: Smoke test
+        shell: pwsh
+        run: |
+          $out = & dist\soundpad-rpc\soundpad-rpc.exe --version
+          Write-Host $out
+          $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
+          if ($out -ne "soundpad-rpc $version") { throw "unexpected output: $out" }
+          if ($env:GITHUB_REF_TYPE -eq 'tag' -and $env:GITHUB_REF_NAME -ne "v$version") {
+            throw "tag $env:GITHUB_REF_NAME does not match package.json version $version"
+          }
+
+      - name: Zip
+        shell: pwsh
+        run: |
+          $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
+          $zip = "soundpad-rpc-v$version-win-x64.zip"
+          Compress-Archive -Path dist\soundpad-rpc -DestinationPath "dist\$zip"
+          (Get-FileHash "dist\$zip" -Algorithm SHA256).Hash.ToLower() + "  $zip" | Set-Content "dist\$zip.sha256" -Encoding ascii
+          "ZIP=$zip" >> $env:GITHUB_ENV
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: soundpad-rpc-win-x64
+          path: dist/${{ env.ZIP }}*
+
+      - name: Publish release
+        if: github.ref_type == 'tag'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $notes = ".github/release-notes/$env:GITHUB_REF_NAME.md"
+          $ghArgs = @('release', 'create', $env:GITHUB_REF_NAME, "dist/$env:ZIP", "dist/$env:ZIP.sha256", '--title', "soundpad-rpc $env:GITHUB_REF_NAME")
+          if (Test-Path $notes) { $ghArgs += @('--notes-file', $notes) } else { $ghArgs += '--generate-notes' }
+          gh @ghArgs
