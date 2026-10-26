@@ -47,7 +47,7 @@ function candidatePipePaths(platform = process.platform, env = process.env) {
       paths.push('\\\\?\\pipe\\discord-ipc-' + i);
     } else {
       const base = env.XDG_RUNTIME_DIR || env.TMPDIR || env.TMP || env.TEMP || '/tmp';
-      paths.push(path.join(base, 'discord-ipc-' + i));
+      paths.push(path.posix.join(base, 'discord-ipc-' + i));
     }
   }
   return paths;
