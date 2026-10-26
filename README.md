@@ -186,7 +186,7 @@ npm i --no-save esbuild@0.25.0 postject@1.0.0-alpha.6 rcedit@4.0.1
 node scripts/build-exe.js
 ```
 
-This bundles the app into a [Node.js single executable](https://nodejs.org/api/single-executable-applications.html) in `dist/soundpad-rpc/`. Pushing a `v*` tag runs the same build on GitHub Actions and publishes the zip as a release.
+This bundles the app into a [Node.js single executable](https://nodejs.org/api/single-executable-applications.html) in `dist/soundpad-rpc/`. Publishing a GitHub release (tag `vX.Y.Z` matching `package.json`) runs the same build on GitHub Actions and attaches the zip to it.
 
 Soundpad commands follow Leppsoft's official `SoundpadRemoteControl.java` reference.
 

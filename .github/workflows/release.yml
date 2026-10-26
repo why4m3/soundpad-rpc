@@ -1,8 +1,8 @@
 name: release
 
 on:
-  push:
-    tags: ['v*']
+  release:
+    types: [published]
   workflow_dispatch:
 
 permissions:
@@ -45,13 +45,9 @@ jobs:
           name: soundpad-rpc-win-x64
           path: dist/${{ env.ZIP }}*
 
-      - name: Publish release
-        if: github.ref_type == 'tag'
+      - name: Attach to release
+        if: github.event_name == 'release'
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
-        run: |
-          $notes = ".github/release-notes/$env:GITHUB_REF_NAME.md"
-          $ghArgs = @('release', 'create', $env:GITHUB_REF_NAME, "dist/$env:ZIP", "dist/$env:ZIP.sha256", '--title', "soundpad-rpc $env:GITHUB_REF_NAME")
-          if (Test-Path $notes) { $ghArgs += @('--notes-file', $notes) } else { $ghArgs += '--generate-notes' }
-          gh @ghArgs
+        run: gh release upload $env:GITHUB_REF_NAME "dist/$env:ZIP" "dist/$env:ZIP.sha256" --clobber
