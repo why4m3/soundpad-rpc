@@ -44,5 +44,5 @@ test('loadConfig creates config.json from the example when missing', () => {
   assert.equal(cfg.log_file, path.join(dir, 'soundpad-rpc.log'));
   fs.writeFileSync(file, '{ broken');
   assert.throws(() => loadConfig(file), /config\.json/);
-  fs.rmSync(dir, { recursive: true, force: true });
+  fs.rmSync(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 50 }); // Windows: AV may still hold the file
 });

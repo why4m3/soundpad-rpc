@@ -90,7 +90,7 @@ async function setup(t, extraConfig = {}) {
     await app.shutdown();
     await spServer.close();
     await discord.close();
-    fs.rmSync(dir, { recursive: true, force: true });
+    fs.rmSync(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 50 }); // Windows: AV may still hold the file
   });
   return ctx;
 }
@@ -241,5 +241,5 @@ test('claude-rpc helper treats a dead soundpad-rpc or stale file as inactive', (
   assert.equal(isSoundpadActive({ file, now: 1e15 }), true); // paused: as long as the process lives
   fs.writeFileSync(file, '{broken');
   assert.equal(isSoundpadActive({ file }), false);
-  fs.rmSync(dir, { recursive: true, force: true });
+  fs.rmSync(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 50 }); // Windows: AV may still hold the file
 });
