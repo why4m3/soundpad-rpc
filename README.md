@@ -195,4 +195,4 @@ Soundpad commands follow Leppsoft's official `SoundpadRemoteControl.java` refere
 
 ## License
 
-[MIT](LICENSE)
+[MIT](LICENSE) © why4m3
